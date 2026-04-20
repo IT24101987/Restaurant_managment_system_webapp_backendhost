@@ -55,7 +55,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 // Rate limiting on auth endpoints
 const authLimiter = rateLimit({
