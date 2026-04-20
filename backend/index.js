@@ -40,16 +40,22 @@ app.use(express.json({ limit: "15mb" }));
 
 // CORS — restrict to allowed origins
 const allowLocalhostPort = /^http:\/\/localhost:517\d$/;
-app.use(cors({
+const defaultRenderFrontendOrigin = "https://restaurant-managment-system-webapp.onrender.com";
+const allowedOrigins = new Set([defaultRenderFrontendOrigin, ...config.corsOrigins]);
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (config.corsOrigins.includes(origin)) return callback(null, true);
+    if (allowedOrigins.has(origin)) return callback(null, true);
     if (allowLocalhostPort.test(origin)) return callback(null, true);
     return callback(new Error("CORS blocked"), false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
-}));
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Rate limiting on auth endpoints
 const authLimiter = rateLimit({
